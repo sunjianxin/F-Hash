@@ -1,8 +1,7 @@
-## F-Hash
+## F-Hash: *Feature-Based Hash Design for Time-Varying Volume Visualization via Multi-Resolution Tesseract Encoding*
 
-F-Hash: Feature-Based Hash Design for Time-Varying Volume Visualization via Multi-Resolution Tesseract Encoding
-
-![Autonomous Agent](assets/autonomy.png)
+![results](assets/animation_flame.gif)
+Demo video can be found <a href="https://youtu.be/AiN_mFc_Oig?si=8QNchPEweSy_SrxO" target="_blank">here</a>.
 
 ### 1. Agent
 Agentic AI controlling the workflows
