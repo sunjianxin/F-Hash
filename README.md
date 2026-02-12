@@ -27,9 +27,14 @@ Run Coreset Selection
 ```bash
 python coreset.py
 ```
-
+### TODO
+- [X] Coreset selection
+- [X] F-Hash input encoding
+- [x] Training
+- [ ] Adaptive Ray Marching (ARM)
 
 ## Citing H-Hash
+If you use it in your research, we would appreciate a citation via
 ```bibtex
 @ARTICLE{sun2025fhash,
   author={Sun, Jianxin and Lenz, David and Yu, Hongfeng and Peterka, Tom},
@@ -40,5 +45,9 @@ python coreset.py
   number={1},
   pages={396-406},
   keywords={Encoding;Data visualization;Training;Convergence;Rendering (computer graphics);Data models;Superresolution;Hash functions;Computational modeling;Neural radiance field;Time-varying volume;volume visualization;input encoding;deep learning},
-  doi={10.1109/TVCG.2025.3634812}}
+  doi={10.1109/TVCG.2025.3634812}
+}
 ```
+
+## License
+F-Hash is distributed under the terms of the BSD-3 license.
