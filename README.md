@@ -23,7 +23,7 @@ F-Hash (Source code)
 │       │   └── feature_local (Training data: .bin; Meta data: .txt, .json)
 │       └── argon_128x128x256_predict
 │           └── f_hash
-│               └── time_step_index (predicted volume of specific time step during training: .vtk)
+│               └── time_step_index (Prediction of time step during training: .vtk)
 └── models
     └── argon_128x128x256
         └── f_hash (saved checkpoints during training)
