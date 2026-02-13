@@ -16,16 +16,17 @@ pip install vtk torch tqdm
 ```
 ### 2. Directory tree
 ```
-F-Hash
+F-Hash (Source code)
 ├── data
-│   ├── argon_bubble
-│       ├── argon_128x128x256
-│       │   └── feature_local
+│   └── argon_bubble  (Raw dataset: .dat)
+│       ├── argon_128x128x256  (Keyframe: .vtk and .bin)
+│       │   └── feature_local (Training data: .bin; Meta data: .txt, .json)
 │       └── argon_128x128x256_predict
 │           └── f_hash
+│               └── time_step_index (predicted volume of specific time step during training: .vtk)
 └── models
     └── argon_128x128x256
-        └── f_hash
+        └── f_hash (saved checkpoints during training)
 ```
 ### 2. Run
 Coreset Selection
