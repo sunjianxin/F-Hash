@@ -30,7 +30,7 @@ F-Hash (Source code)
         └── f_hash (saved checkpoints during training)
 ```
 ### 3. Download the data
-Coreset Selection
+Download the Argon Bubble toy dataset, put all the extracted frames under F-Hash/data/argon_bubble folder in above directory tree.
 ```bash
 python download_data.py
 ```
