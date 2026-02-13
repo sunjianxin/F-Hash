@@ -305,6 +305,11 @@ if __name__ == "__main__":
                                                                                                             x_size,
                                                                                                             y_size,
                                                                                                             z_size)
+                                                                                                            
+    print("bounding:", x_lowers, x_uppers)
+    print("bounding:", y_lowers, y_uppers)
+    print("bounding:", z_lowers, z_uppers)
+
     for t in range(t_size):
         x_lower = x_lowers[t]
         x_upper = x_uppers[t]
@@ -367,3 +372,6 @@ if __name__ == "__main__":
     resolutions = [x_res, y_res, z_res, t_res]
     with open("data/argon_bubble/argon_128x128x256/feature_local/resolutions.json", "w") as f:
         json.dump(resolutions, f)
+    bounding = [x_lowers, x_uppers, y_lowers, y_uppers, z_lowers, z_uppers]
+    with open("data/argon_bubble/argon_128x128x256/feature_local/bounding.json", "w") as f:
+        json.dump(bounding, f)
