@@ -1,8 +1,14 @@
+"""
+Author: Jianxin Sun
+Email: sunjianxin66@gmail.com
+Description:
+    Data format conversion
+"""
+
 import numpy as np
 from tqdm import tqdm
 import vtk
 from vtk.util import numpy_support
-
 
 def saveToTrainingData(data, path, x_size, y_size, z_size):
     points = np.zeros((x_size*y_size*z_size, 4), dtype=np.float32)

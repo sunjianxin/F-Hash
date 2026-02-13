@@ -292,7 +292,6 @@ if __name__ == "__main__":
     print("Save frames as .bin files")
     save2Bin("data/argon_bubble/argon_128x128x256", datas)
 
-
     threshold = 0.09
     t_size, x_size, y_size, z_size = datas.shape
     print(t_size, x_size, y_size, z_size)
@@ -369,9 +368,11 @@ if __name__ == "__main__":
     print(y_res)
     print(z_res)
     print(t_res)
+    # Save the multi-resolution setting for F-Hash
     resolutions = [x_res, y_res, z_res, t_res]
     with open("data/argon_bubble/argon_128x128x256/feature_local/resolutions.json", "w") as f:
         json.dump(resolutions, f)
+    # Save the size of bounding box of each key frame
     bounding = [x_lowers, x_uppers, y_lowers, y_uppers, z_lowers, z_uppers]
     with open("data/argon_bubble/argon_128x128x256/feature_local/bounding.json", "w") as f:
         json.dump(bounding, f)

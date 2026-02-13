@@ -16,7 +16,6 @@ from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
 from utility import npArray2Vtk
 
-
 class MyTrainDataset(Dataset):
     def __init__(self, path, t_size, time_step):
         # data loading 
@@ -133,26 +132,21 @@ if __name__ == "__main__":
     for i in tqdm(range(120)):
         check_point_name = "models/argon_128x128x256/f_hash/" + str(i) + "_epoches.pt"
         predicted = getPredict(model_back, check_point_name, train_dataset.x, 2)
-        # print(predicted.shape)
         mse = criterion(predicted, outputs).item()
         mses.append(mse)
-        # save result as vtk file
-        # print(predicted.shape)
+        # save prediction while training as vtk file for evaluation
         x_size = x_uppers[time_step] - x_lowers[time_step] + 1
         y_size = y_uppers[time_step] - y_lowers[time_step] + 1
         z_size = z_uppers[time_step] - z_lowers[time_step] + 1
         predicted = predicted.cpu().numpy()
         predicted = predicted.reshape(x_size, y_size, z_size)
         data = getAllFromLocal(predicted, x_lowers[time_step], y_lowers[time_step], z_lowers[time_step], 128, 128, 256)
-        # print(data.shape)
         path = "data/argon_bubble/argon_128x128x256_predict/f_hash/timestep_" + str(time_step) + "/" + str(i) + ".vtk"
-        # print(np.min(data), np.max(data))
         npArray2Vtk(data, path, spacing, spacing, spacing)
     end_time = time.time()
     execution_time = end_time - start_time  # Compute duration
     print(f"Execution time: {execution_time:.6f} seconds")
     print("MSE Loss:", mses)
-
 
     # Loss plot
     plt.figure()

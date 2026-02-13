@@ -12,9 +12,10 @@ Demo video can be found <a href="https://youtu.be/AiN_mFc_Oig?si=8QNchPEweSy_Srx
 
 ### 1. Packages
 ```bash
-pip install vtk torch tqdm 
+pip install vtk torch tqdm json
 ```
 ### 2. Directory tree
+The following directoies need to be manually created:
 ```
 F-Hash (Source code)
 ├── data
@@ -28,7 +29,12 @@ F-Hash (Source code)
     └── argon_128x128x256
         └── f_hash (saved checkpoints during training)
 ```
-### 2. Run
+### 3. Download the data
+Coreset Selection
+```bash
+python download_data.py
+```
+### 4. Run
 Coreset Selection
 ```bash
 python coreset.py
@@ -45,9 +51,10 @@ python test.py
 - [X] Coreset selection
 - [X] F-Hash input encoding
 - [x] Training
+- [x] Testing
 - [ ] Adaptive Ray Marching (ARM)
 
-## Citing H-Hash
+## Citing F-Hash
 If you use it in your research, we would appreciate a citation via
 ```bibtex
 @ARTICLE{sun2025fhash,
