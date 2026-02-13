@@ -1,28 +1,28 @@
+"""
+Author: Jianxin Sun
+Email: sunjianxin66@gmail.com
+Description:
+    F-Hash input encoding
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-# import tinycudann32 as tcnn
-import tinycudann as tcnn
 import numpy as np
 
-# implemantation from HashNeRF-pytorch
-# BOX_OFFSETS = torch.tensor([[[i,j,k] for i in [0, 1] for j in [0, 1] for k in [0, 1]]], device='cuda') # 1 x 8 x 3, int64
-BOX_OFFSETS = torch.tensor([[[i,j,k,l] for i in [0, 1] for j in [0, 1] for k in [0, 1] for l in [0, 1]]], device='cuda') # 1 x 8 x 3, int64
+BOX_OFFSETS = torch.tensor([[[i,j,k,l] for i in [0, 1] for j in [0, 1] for k in [0, 1] for l in [0, 1]]], device='cuda') # 1 x 16 x 4, int64
 
-def hash_my(coords, resolution_t, resolution_x, resolution_y, resolution_z):
+def hash_linear(coords, resolution_x, resolution_y, resolution_z):
     '''
-    coords: this function can process upto 7 dim coordinates, B x 8 x 3
+    coords: B x 16 x 4
     '''
-    # indices = coords[..., 2]*resolution_x*resolution_y + coords[..., 1]*resolution_x + coords[..., 0]
     indices = coords[..., 0]*resolution_x*resolution_y*resolution_z + coords[..., 3]*resolution_x*resolution_y + coords[..., 2]*resolution_x + coords[..., 1]
-    # print("indices.shape:", indices.shape)
-    # print(indices[0:100, :])
     indices = indices.to(dtype=torch.int64)
     return indices
 
 def get_voxel_vertices(txyz, bounding_box, resolution_t, resolution_x, resolution_y, resolution_z):
     '''
-    txyz: 3D coordinates of samples. B x 4
+    txyz: 4D coordinates of samples. B x 4
     bounding_box: min and max t,x,y,z coordinates of object bbox
     resolution_t/x/y/z: number of voxels per axis
     '''
@@ -63,7 +63,7 @@ def get_voxel_vertices(txyz, bounding_box, resolution_t, resolution_x, resolutio
     voxel_indices = bottom_left_idx.unsqueeze(1) + BOX_OFFSETS # B x 1 x 4 + 1 x 16 x 4 = B x 16 x 4, grid index (int64), [0, 1, ..., resolution]
     # print("voxel_indices max:", torch.max(voxel_indices))
     # print("voxel_indices min:", torch.min(voxel_indices))
-    hashed_voxel_indices = hash_my(voxel_indices, resolution_t, resolution_x, resolution_y, resolution_z) # B x 16, hashed_indices(returned from hash function) of 16 corners
+    hashed_voxel_indices = hash_linear(voxel_indices, resolution_x, resolution_y, resolution_z) # B x 16, hashed_indices(returned from hash function) of 16 corners
 
     return voxel_min_vertex, voxel_max_vertex, hashed_voxel_indices, keep_mask
 
@@ -84,18 +84,12 @@ class HashEmbedder(nn.Module):
         self.x_resolutions = x_resolutions
         self.y_resolutions = y_resolutions
         self.z_resolutions = z_resolutions
-        
-
-        # b is always 2 for dense grid
-        # self.b = torch.exp((torch.log(self.finest_resolution)-torch.log(self.base_resolution))/(n_levels-1))
-        # print("b", self.b)
 
         embedding_size = []
         for i in range(n_levels):
             embedding_size.append(self.t_resolutions[i]*self.x_resolutions[i]*self.y_resolutions[i]*self.z_resolutions[i])  
 
         self.embeddings = nn.ModuleList([nn.Embedding(embedding_size[i], \
-                                        # self.n_features_per_level) for i in range(n_levels)])
                                         self.n_features_per_level) for i in range(len(embedding_size))])
         for i in range(len(embedding_size)):
             print(self.embeddings[i])
@@ -103,34 +97,6 @@ class HashEmbedder(nn.Module):
         # custom uniform initialization
         for i in range(len(embedding_size)):
             nn.init.uniform_(self.embeddings[i].weight, a=-0.0001, b=0.0001)
-            # self.embeddings[i].weight.data.zero_()
-        
-
-    def trilinear_interp(self, x, voxel_min_vertex, voxel_max_vertex, voxel_embedds):
-        '''
-        x: B x 3
-        voxel_min_vertex: B x 3
-        voxel_max_vertex: B x 3
-        voxel_embedds: B x 8 x 2
-        '''
-        # source: https://en.wikipedia.org/wiki/Trilinear_interpolation
-        weights = (x - voxel_min_vertex)/(voxel_max_vertex-voxel_min_vertex) # B x 3
-
-        # step 1
-        # 0->000, 1->001, 2->010, 3->011, 4->100, 5->101, 6->110, 7->111
-        c00 = voxel_embedds[:,0]*(1-weights[:,0][:,None]) + voxel_embedds[:,4]*weights[:,0][:,None]
-        c01 = voxel_embedds[:,1]*(1-weights[:,0][:,None]) + voxel_embedds[:,5]*weights[:,0][:,None]
-        c10 = voxel_embedds[:,2]*(1-weights[:,0][:,None]) + voxel_embedds[:,6]*weights[:,0][:,None]
-        c11 = voxel_embedds[:,3]*(1-weights[:,0][:,None]) + voxel_embedds[:,7]*weights[:,0][:,None]
-
-        # step 2
-        c0 = c00*(1-weights[:,1][:,None]) + c10*weights[:,1][:,None]
-        c1 = c01*(1-weights[:,1][:,None]) + c11*weights[:,1][:,None]
-
-        # step 3
-        c = c0*(1-weights[:,2][:,None]) + c1*weights[:,2][:,None]
-
-        return c
 
     def quadrilinear_interp(self, x, voxel_min_vertex, voxel_max_vertex, voxel_embedds):
         '''
@@ -168,7 +134,7 @@ class HashEmbedder(nn.Module):
         return c0
 
     def forward(self, x):
-        # x is 3D point position: B x 4
+        # x is 4D point position: B x 4
         x_embedded_all = []
 
         for i in range(self.n_levels):
@@ -176,12 +142,7 @@ class HashEmbedder(nn.Module):
             resolution_x = self.x_resolutions[i]
             resolution_y = self.y_resolutions[i]
             resolution_z = self.z_resolutions[i]
-            # print("resolution: ", resolution_x, resolution_y, resolution_z)
-            # voxel_min_vertex, voxel_max_vertex, hashed_voxel_indices, keep_mask = get_voxel_vertices(x,
-            #                                                                                          self.bounding_box, 
-            #                                                                                          resolution,
-            #                                                                                          self.log2_hashmap_size)
-            # print(hashed_voxel_indices.dtype)
+
             # voxel_min_vertex: B x 4, location of the min corner
             # voxel_max_vertex: B x 4, location of the max corner
             # hashed_voxel_indices: B x 16, hashed_indices(returned from hash function) of 8 corners
@@ -196,15 +157,13 @@ class HashEmbedder(nn.Module):
             # print("hashed_voxel_indices.max: ", torch.max(hashed_voxel_indices))
             voxel_embedds = self.embeddings[i](hashed_voxel_indices) # B x 16 x 2(feature size), features of 16 corners
             
-
-            # x_embedded = self.trilinear_interp(x, voxel_min_vertex, voxel_max_vertex, voxel_embedds)
             x_embedded = self.quadrilinear_interp(x, voxel_min_vertex, voxel_max_vertex, voxel_embedds)
             x_embedded_all.append(x_embedded)
 
         keep_mask = keep_mask.sum(dim=-1)==keep_mask.shape[-1]
         return torch.cat(x_embedded_all, dim=-1), keep_mask
 
-class INR_denseGrid4D(nn.Module):
+class tesseract(nn.Module):
     def __init__(self, 
                  num_levels=6, # 2, 4, 8, 16(org), 32, 64, 128, 256 
                  level_dim=2,
@@ -237,7 +196,7 @@ class INR_denseGrid4D(nn.Module):
     def forward(self, x):
         """
         Args:
-            x: Tensor of shape (batch_size, 3), the 3D coordinates
+            x: Tensor of shape (batch_size, 4), the 4D coordinates
 
         Returns:
             Tensor of shape (batch_size, 1), the predicted scalar value
@@ -248,7 +207,3 @@ class INR_denseGrid4D(nn.Module):
 
         # Predict scalar value
         return self.mlp(encoded)
-
-        
-        
-        

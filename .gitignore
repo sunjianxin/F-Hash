@@ -8,3 +8,6 @@ __pycache__/
 
 # Datasets
 data
+
+# Checkpoints
+models

@@ -1,6 +1,7 @@
 ## F-Hash: *Feature-Based Hash Design for Time-Varying Volume Visualization via Multi-Resolution Tesseract Encoding*
 
 ![results](assets/animation_flame.gif)
+
 F-Hash is a novel feature-based multi-resolution Tesseract encoding architecture to greatly enhance the convergence speed compared with existing input encoding methods for modeling time-varying volumetric data. The proposed design incorporates multi-level collision-free hash functions that map dynamic 4D multi-resolution embedding grids without bucket waste, achieving high encoding capacity with compact encoding parameters. Our encoding method is agnostic to time-varying feature detection methods, making it a unified encoding solution for feature tracking and evolution visualization.
 
 [Github Page](https://github.com/sunjianxin/F-Hash), 
@@ -11,7 +12,7 @@ Demo video can be found <a href="https://youtu.be/AiN_mFc_Oig?si=8QNchPEweSy_Srx
 
 ### 1. Packages
 ```bash
-pip install vtk
+pip install vtk torch tqdm 
 ```
 ### 2. Install Tinycudann
 Get the Tinycudann source from [here](https://github.com/NVlabs/tiny-cuda-nn). Default Tinycudann supporting half-precision. To support Float 32 go into include/tiny-cuda-nn/common.h and change
@@ -27,10 +28,18 @@ Install from a local clone of tiny-cuda-nn, invoke to install Tinycudann to your
 tiny-cuda-nn$ cd bindings/torch
 tiny-cuda-nn/bindings/torch$ python setup.py install
 ```
-### 3. Visualization Tools
-Run Coreset Selection
+### 2. Run
+Coreset Selection
 ```bash
 python coreset.py
+```
+Training
+```bash
+python train.py
+```
+Testing
+```bash
+python test.py
 ```
 ### TODO
 - [X] Coreset selection

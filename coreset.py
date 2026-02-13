@@ -5,6 +5,7 @@ Description:
     Coreset Selection
 """
 
+import json
 import numpy as np
 from tqdm import tqdm
 from utility import npArray2Vtk, saveToTrainingData
@@ -226,6 +227,61 @@ def getTrainingDataFormate2(data,
 
     return xyzs_global_list, xyzs_local_list, vs_list, x_lower_all, x_upper_all, y_lower_all, y_upper_all, z_lower_all, z_upper_all
 
+def divide(r, res):
+    '''
+    Input encoding grid resolution divider. fold = 2
+    r: current resolution
+    res: resolution list
+    '''
+    res.append(r)
+    if (r == 2):
+        return
+    if (r%2 == 0): # even number
+        divide(r/2, res)
+    else:
+        r += 1
+        divide(r/2, res)
+
+def getMultiRes(x_lower, x_upper, y_lower, y_upper, z_lower, z_upper, t_lower, t_upper):
+    '''
+    Calculate the spatial multi-resolution setting
+    x/y/z_lower: lower bound on x/y/z dimension
+    x/y/z_upper: upper bound on x/y/z dimension
+    '''
+    x_diff = x_upper - x_lower + 1
+    y_diff = y_upper - y_lower + 1
+    z_diff = z_upper - z_lower + 1
+    t_diff = t_upper - t_lower + 1
+
+    x_ress = []
+    divide(x_diff, x_ress)
+    x_len = len(x_ress)
+
+    y_ress = []
+    divide(y_diff, y_ress)
+    y_len = len(y_ress)
+
+    z_ress = []
+    divide(z_diff, z_ress)
+    z_len = len(z_ress)
+
+    t_ress = []
+    divide(t_diff, t_ress)
+    t_len = len(t_ress)
+
+    # find the size of the shortest list
+    length = min(x_len, y_len, z_len)
+
+    if t_len < length:
+        padding_len = length - t_len
+        for i in range(padding_len):
+            t_ress.append(2)
+    else:
+        t_ress = t_ress[0:length]
+    # print(length)
+    
+    return x_ress[0:length], y_ress[0:length], z_ress[0:length], t_ress
+
 if __name__ == "__main__":
     # Load key frames of Argon Bubble dataset
     datas = getArgonBubbleData()
@@ -289,3 +345,25 @@ if __name__ == "__main__":
         points = np.hstack((xyzs, vs))
         path = "data/argon_bubble/argon_128x128x256/feature_local/" + str(t) + ".bin"
         points.tofile(path)
+
+    # Calculate the multi-resolution setting for F-Hash
+    t_lower_all = 0
+    t_upper_all = t_size - 1
+    x_res, y_res, z_res, t_res = getMultiRes(x_lower_all, x_upper_all, y_lower_all, y_upper_all, z_lower_all, z_upper_all, t_lower_all, t_upper_all)
+    # float to int
+    x_res = [int(x) for x in x_res]
+    y_res = [int(y) for y in y_res]
+    z_res = [int(z) for z in z_res]
+    t_res = [int(t) for t in t_res]
+    # reverst the order
+    x_res.reverse()
+    y_res.reverse()
+    z_res.reverse()
+    t_res.reverse()
+    print(x_res)
+    print(y_res)
+    print(z_res)
+    print(t_res)
+    resolutions = [x_res, y_res, z_res, t_res]
+    with open("data/argon_bubble/argon_128x128x256/feature_local/resolutions.json", "w") as f:
+        json.dump(resolutions, f)
