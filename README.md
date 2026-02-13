@@ -14,19 +14,18 @@ Demo video can be found <a href="https://youtu.be/AiN_mFc_Oig?si=8QNchPEweSy_Srx
 ```bash
 pip install vtk torch tqdm 
 ```
-### 2. Install Tinycudann
-Get the Tinycudann source from [here](https://github.com/NVlabs/tiny-cuda-nn). Default Tinycudann supporting half-precision. To support Float 32 go into include/tiny-cuda-nn/common.h and change
-```bash
-#define TCNN_HALF_PRECISION (!(TCNN_MIN_GPU_ARCH == 61 || TCNN_MIN_GPU_ARCH <= 52))
+### 2. Directory tree
 ```
-to
-```bash
-#define TCNN_HALF_PRECISION 0
-```
-Install from a local clone of tiny-cuda-nn, invoke to install Tinycudann to your virtual enviroment
-```bash
-tiny-cuda-nn$ cd bindings/torch
-tiny-cuda-nn/bindings/torch$ python setup.py install
+F-Hash
+├── data
+│   ├── argon_bubble
+│       ├── argon_128x128x256
+│       │   └── feature_local
+│       └── argon_128x128x256_predict
+│           └── f_hash
+└── models
+    └── argon_128x128x256
+        └── f_hash
 ```
 ### 2. Run
 Coreset Selection
