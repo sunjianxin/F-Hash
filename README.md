@@ -12,7 +12,7 @@ Demo video can be found <a href="https://youtu.be/AiN_mFc_Oig?si=8QNchPEweSy_Srx
 
 ### 1. Packages
 ```bash
-pip install vtk torch tqdm json
+pip install vtk torch tqdm
 ```
 ### 2. Directory tree
 The following directoies need to be manually created:
@@ -24,7 +24,7 @@ F-Hash (Source code)
 │       │   └── feature_local (Training data: .bin; Meta data: .txt, .json)
 │       └── argon_128x128x256_predict
 │           └── f_hash
-│               └── time_step_index (Prediction of time step during training: .vtk)
+│               └── timestep_index (Prediction of time step during training: .vtk)
 └── models
     └── argon_128x128x256
         └── f_hash (saved checkpoints during training)
